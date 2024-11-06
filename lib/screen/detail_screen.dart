@@ -130,29 +130,27 @@ class DetailScreen extends StatelessWidget {
                   ),
                   // Info Bawah
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Deskripsi",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Deskripsi",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      SizedBox(child: Text(candi.description)),
-                    ],
-                  ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        SizedBox(child: Text(candi.description)),
+                      ]),
+                  //info gallery
                   Padding(
                     padding: const EdgeInsets.all(15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Divider(
-                          color: Colors.deepPurple.shade100,
-                        ),
+                        Divider(color: Colors.deepPurple.shade100),
                         const Text(
                           'Galeri',
                           style: TextStyle(
@@ -160,13 +158,12 @@ class DetailScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 10,
                         ),
                         SizedBox(
                           height: 100,
                           child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
                             itemCount: candi.imageUrls.length,
                             itemBuilder: (context, index) {
                               return Padding(
@@ -188,7 +185,8 @@ class DetailScreen extends StatelessWidget {
                                         width: 120,
                                         height: 120,
                                         fit: BoxFit.cover,
-                                        placeholder: (contex, url) => Container(
+                                        placeholder: (context, url) =>
+                                            Container(
                                           width: 120,
                                           height: 120,
                                           color: Colors.deepPurple[50],
@@ -209,7 +207,7 @@ class DetailScreen extends StatelessWidget {
                           height: 4,
                         ),
                         const Text(
-                          'Tap untuk Memperbesar',
+                          'Tap untuk memperbesar',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.black54,
@@ -220,7 +218,7 @@ class DetailScreen extends StatelessWidget {
                   )
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
