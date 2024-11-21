@@ -5,6 +5,7 @@ import 'package:wisata_candi/screen/home_screen.dart';
 import 'package:wisata_candi/screen/profile_screen.dart';
 import 'package:wisata_candi/screen/search_screen.dart';
 import 'package:wisata_candi/screen/sign_in_screen.dart';
+import 'package:wisata_candi/screen/sign_up_screen.dart';
 import 'screen/detail_screen.dart';
 import 'package:wisata_candi/screen/profile_screen.dart';
 import 'package:wisata_candi/screen/home_screen.dart';
@@ -35,7 +36,13 @@ class MainApp extends StatelessWidget {
           ),
           useMaterial3: true),
       //home: const HomeScreen(),
-      home: const SignInScreen(),
+      home: const MainScreen(),
+      initialRoute: '/',
+      routes: {
+        '/homescreen': (context) => const HomeScreen(),
+        '/signin': (context) => const SignInScreen(),
+        '/signup': (context) => const SignUpScreen(),
+      },
     );
   }
 }
