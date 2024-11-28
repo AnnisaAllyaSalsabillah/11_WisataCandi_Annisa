@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -38,10 +39,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
       return;
     }
-    //Simpan data pengguna di SharedPreferences
-    prefs.setString('fullname', name);
-    prefs.setString('username', username);
-    prefs.setString('password', password);
+
+    //JIKA nama, username, password tidak kosong lakukan enskripsi
+    if (name.isNotEmpty && username.isNotEmpty && password.isNotEmpty) {
+      final encrypt.Key key = encrypt.Key.fromLength(32);
+      final iv = encrypt.IV.fromLength(16);
+
+      final encrypter = encrypt.Encrypter(encrypt.AES(key));
+      final encryptedName = encrypter.encrypt(name, iv: iv);
+      final encryptedUsername = encrypter.encrypt(username, iv: iv);
+      final encryptedPassword = encrypter.encrypt(password, iv: iv);
+
+      //Simpan data pengguna di SharedPreferences
+      prefs.setString('fullname', encryptedName.base64);
+      prefs.setString('username', encryptedUsername.base64);
+      prefs.setString('password', encryptedPassword.base64);
+      prefs.setString('key', key.base64);
+      prefs.setString('iv', iv.base64);
+    }
 
     //buat navigasi ke SignInScreen
     Navigator.pushReplacementNamed(context, '/signin');
@@ -76,11 +91,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
-                      labelText: "Nama Pengguna",
+                      labelText: "Nama",
                       border: OutlineInputBorder(),
                     ),
                   ),
                   //TODO: 5. Pasang TextFormField Nama Pengguna
+                  SizedBox(
+                    height: 20,
+                  ),
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(

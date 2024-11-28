@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,46 +20,67 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isSignedIn = false;
   bool _obscurePassword = true;
 
+  Future<Map<String, String>> _retrieveAndDecryptDataFromPrefs( Future<SharedPreferences> prefs,) async {
+    final SharedPreferences = await prefs;
+    final encryptedUsername = SharedPreferences.getString('username') ?? '';
+    final encryptedPassword = SharedPreferences.getString('password') ?? '';
+    final keyString = SharedPreferences.getString('key') ?? '';
+    final ivString = SharedPreferences.getString('iv') ?? '';
+
+    final encrypt.Key key = encrypt.Key.fromBase64(keyString);
+    final iv = encrypt.IV.fromBase64(ivString);
+
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+    final decryptedUsername =
+    encrypter.decrypt64(encryptedUsername, iv: iv);
+    final decryptedPassword =
+    encrypter.decrypt64(encryptedPassword, iv: iv);
+
+    //Mengembalikan data terdeteksi
+    return {'username': decryptedUsername, 'password': decryptedPassword};
+  }
+
   void _signIn() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String savedUsername = prefs.getString('username') ?? '';
-    final String savedPassword = prefs.getString('password') ?? '';
-    final String enteredUsername = _usernameController.text.trim();
-    final String enteredPassword = _passwordController.text.trim();
+    try {
+      final Future<SharedPreferences> prefsFuture = 
+      SharedPreferences.getInstance();
 
-    if (enteredUsername.isEmpty || enteredPassword.isEmpty) {
-      setState(() {
-        _errorText = 'Nama pengguna dan kata sandi harus diisi.';
-      });
-      return;
-    }
+      final String username = _usernameController.text;
+      final String password = _passwordController.text;
+      print('Sign in attempt');
 
-    if (savedUsername.isEmpty || savedPassword.isEmpty) {
-      setState(() {
-        _errorText =
-            'Pengguna belum terdaftar. Silahkan daftar terlebih dahulu.';
-      });
-      return;
-    }
+      if (username.isNotEmpty && password.isNotEmpty) {
+        final SharedPreferences prefs = await prefsFuture;
+        final data = await _retrieveAndDecryptDataFromPrefs(prefs as Future<SharedPreferences>);
+        if (data.isNotEmpty) {
+          final decryptedUsername = data['usesrname'];
+          final decryptedPassword = data['password'];
 
-    if (enteredPassword == savedUsername && enteredPassword == savedPassword) {
-      setState(() {
-        _errorText = '';
-        _isSignedIn = true;
-        prefs.setBool('isSignedIn', true);
-      });
-      //Pemanggilan untuk menghapus semua halaman dalam tumpukan navigasi
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      });
-      // Sign in berhasil, Navigasikan ke layar utama
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(context, '/');
-      });
-    } else {
-      setState(() {
-        _errorText = 'Nama pengguna atau kata sandi salah.';
-      });
+          if (username == decryptedUsername && password == decryptedPassword) {
+            _errorText = '';
+            _isSignedIn = true;
+            prefs.setBool('isSignedIn', true);
+            //Pemanggilan u/ menghapus semua halaman dalam tumpukan navigasi
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            });
+            //Sign in berhasil, navigasikan k layar utama T-T
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacementNamed(context, '/');
+            });
+            print('Sign in succeeded');
+          } else {
+            print('Usernamee or password is incorrect');
+          }
+        }else {
+          print('No stored credentials found');
+        }
+      }else {
+        print('username and password cannot be empty');
+        //Tambahkan pesan u/ kasus ketika username atau password kosong
+      }
+    }catch (e) {
+      print('An occurred: $e');
     }
   }
 

@@ -14,19 +14,52 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   bool isFavorite = false;
-  bool isSignedIn = false;
+  bool isSignedIn = false; //Mwnyimpan status sign in
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _checkSignInStatus(); //Memeriksa status sign in saat layar dimuat
+    _loadFavoriteStatus(); //Mmeriksa status favorit saat layar dimuat
+  }
+
+  //Memeriksa status sign in
+  void _checkSignInStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool signedIn = prefs.getBool('isSignedIn') ?? false;
+    setState(() {
+      isSignedIn = signedIn;
+    });
+  }
+
+  //Memeriksa status favorite
+  void _loadFavoriteStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool favorite = prefs.getBool('favorite_${widget.candi.name}') ?? false;
+    setState(() {
+      isFavorite = favorite;
+    });
+  }
 
   Future<void> _toggleFavorite() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //Memeriksa apakah pengguna sudah sign in
-    if (!isSignedIn){
+    if (!isSignedIn) {
       //Jika belum sign in, arahkan ke SignInScreen
-      WidgetsBinding.instance.addPostFrameCallback((_){
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/signin');
       });
       return;
     }
+
+    bool favoriteStatus = !isFavorite;
+    prefs.setBool('favorite_${widget.candi.name}', favoriteStatus);
+
+    setState(() {
+      isFavorite = favoriteStatus;
+    });
   }
 
   @override
@@ -86,8 +119,15 @@ class _DetailScreenState extends State<DetailScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.favorite_border),
+                        onPressed: () {
+                          _toggleFavorite();
+                        },
+                        icon: Icon(
+                          isSignedIn && isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isSignedIn && isFavorite ? Colors.red : null,
+                        ),
                       )
                     ],
                   ),
